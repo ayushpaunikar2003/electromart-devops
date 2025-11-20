@@ -1,0 +1,17 @@
+# Ignore unnecessary files for Docker context
+**/node_modules
+**/__pycache__
+**/*.pyc
+**/*.log
+**/.env
+**/coverage
+**/build
+**/dist
+**/.DS_Store
+**/Thumbs.db
+**/.vscode
+**/.idea
+README.md
+*.md
+*.sh
+*.bak

@@ -1,0 +1,14 @@
+# docker/docker-compose.override.yaml
+
+services:
+  node-exporter:
+    image: prom/node-exporter
+    container_name: node-exporter
+    ports:
+      - "8095:9100"     # Host 8095 → Node Exporter 9100
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor
+    container_name: cadvisor
+    ports:
+      - "8096:8080"     # Host 8096 → cAdvisor 8080

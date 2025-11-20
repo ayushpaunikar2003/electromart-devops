@@ -1,0 +1,4 @@
+# scripts/cloud-init.txt
+#cloud-config
+runcmd:
+  - [ bash, -c, "curl -sS https://raw.githubusercontent.com/<YOUR_REPO>/main/scripts/bootstrap.sh -o /tmp/bootstrap.sh && chmod +x /tmp/bootstrap.sh && bash /tmp/bootstrap.sh" ]
