@@ -10,19 +10,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # ---------- Checkout ----------
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # ---------- Lint Dockerfiles ----------
-      - name: Lint Dockerfiles with Hadolint
+      # ---------- Lint Dockerfiles (Hadolint) ----------
+      - name: Lint backend Dockerfile
         uses: hadolint/hadolint-action@v3.1.0
         with:
-          dockerfile: |
-            app/backend/Dockerfile
-            app/frontend/Dockerfile
+          dockerfile: app/backend/Dockerfile
           config: security/hadolint.yaml
 
-      # ---------- Build images ----------
+      - name: Lint frontend Dockerfile
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: app/frontend/Dockerfile
+          config: security/hadolint.yaml
+
+      # ---------- Build Docker images ----------
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -41,6 +46,15 @@ jobs:
         uses: aquasecurity/trivy-action@0.28.0
         with:
           image-ref: "backend-ci"
+          format: "table"
+          ignore-unfixed: true
+          severity: "HIGH,CRITICAL"
+          exit-code: "1"
+
+      - name: Trivy scan frontend image
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: "frontend-ci"
           format: "table"
           ignore-unfixed: true
           severity: "HIGH,CRITICAL"
