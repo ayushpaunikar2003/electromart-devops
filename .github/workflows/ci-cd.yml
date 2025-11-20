@@ -1,47 +1,47 @@
-name: DevOps Pipeline
+name: Electromart CI
 
 on:
   push:
     branches: [ "main" ]
-
-env:
-  IMAGE_NAME: electromart-app
-  ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
-  AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+  pull_request:
 
 jobs:
-  build:
+  build-test-lint-scan:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Lint Dockerfiles
+      # ---------- Lint Dockerfiles ----------
+      - name: Lint Dockerfiles with Hadolint
         uses: hadolint/hadolint-action@v3.1.0
         with:
-          dockerfile: docker/Dockerfile.backend
+          dockerfile: |
+            app/backend/Dockerfile
+            app/frontend/Dockerfile
+          config: security/hadolint.yaml
 
+      # ---------- Build images ----------
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to Azure ACR
+      - name: Build backend image
         run: |
-          echo ${{ secrets.ACR_PASWORD }} | docker login ${{ secrets.ACR_LOGIN_SERVER }} -u ${{ secrets.ACR_USRNAME }} --password-stdin
+          docker build -t backend-ci ./app/backend
 
-      - name: Build Docker Images
+      - name: Build frontend image
         run: |
-          docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:latest -f docker/Dockerfile.backend .
-          docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}-frontend:latest -f docker/Dockerfile.frontend .
+          docker build -t frontend-ci \
+            --build-arg REACT_APP_API_URL=http://localhost:8091 \
+            ./app/frontend
 
-      - name: Security Scan
-        run: bash security/trivy_scan.sh ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:latest
-
-      - name: Push Images to ACR
-        run: |
-          docker push ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:latest
-          docker push ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}-frontend:latest
-
-      - name: Terraform Apply
-        run: |
-          cd terraform
-          bash init.sh
+      # ---------- Trivy security scan ----------
+      - name: Trivy scan backend image
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: "backend-ci"
+          format: "table"
+          ignore-unfixed: true
+          severity: "HIGH,CRITICAL"
+          exit-code: "1"
