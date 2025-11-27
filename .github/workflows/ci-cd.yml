@@ -1,0 +1,52 @@
+name: Electromart CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+
+jobs:
+  build-test-lint-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ---------- Lint Dockerfiles ----------
+      - name: Lint Dockerfiles with Hadolint
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: app/backend/Dockerfile
+          config: security/hadolint.yaml
+
+      - name: Lint frontend Dockerfile with Hadolint
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: app/frontend/Dockerfile
+          config: security/hadolint.yaml
+
+      # ---------- Build images ----------
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build backend image
+        run: |
+          docker build -t backend-ci ./app/backend
+
+      - name: Build frontend image
+        run: |
+          docker build -t frontend-ci \
+            --build-arg REACT_APP_API_URL=http://localhost:8091 \
+            ./app/frontend
+
+      # ---------- Trivy security scan (backend only, CI-friendly) ----------
+      - name: Trivy scan backend image
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: "backend-ci"
+          format: "table"
+          ignore-unfixed: true
+          severity: "HIGH,CRITICAL"
+          # 👉 IMPORTANT: do not fail the job on vulns (for now)
+          exit-code: "0"

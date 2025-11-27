@@ -1,0 +1,28 @@
+# Node modules
+frontend/node_modules/
+backend/node_modules/
+
+# Environment files
+frontend/.env
+backend/.env
+
+# Build and cache
+frontend/build/
+frontend/dist/
+backend/__pycache__/
+backend/*.pyc
+backend/tmp/
+backend/logs/
+
+# Coverage and reports
+coverage/
+*.log
+*.pid
+*.seed
+*.pid.lock
+
+# System / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

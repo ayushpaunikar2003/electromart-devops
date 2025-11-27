@@ -1,0 +1,41 @@
+# Exclude Git & local metadata
+.git
+.gitignore
+README.md
+LICENSE
+.vscode
+.idea
+
+# Exclude node_modules and caches
+node_modules
+__pycache__
+*.pyc
+*.pyo
+
+# Logs and temp
+*.log
+logs/
+tmp/
+temp/
+npm-debug.log*
+
+# Terraform state
+*.tfstate
+*.tfstate.*
+.terraform
+.terraform.lock.hcl
+
+# Monitoring & security results
+monitoring/data
+security/reports
+security/trivy-results.json
+
+# Scripts not needed inside container
+scripts/
+docs/
+tests/
+examples/
+*.sh
+
+# CI/CD configs
+.github/
