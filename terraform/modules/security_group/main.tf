@@ -1,12 +1,11 @@
 # -------------------------------------------------------------------------
-# 1. BASTION Security Group (The Gatekeeper)
+# 1. BASTION Security Group
 # -------------------------------------------------------------------------
 resource "aws_security_group" "bastion" {
   name        = "${var.name_prefix}-bastion-sg"
   description = "Allow SSH from Admin IP"
   vpc_id      = var.vpc_id
 
-  # Allow SSH from your IP (auto-detected)
   dynamic "ingress" {
     for_each = var.ssh_ingress_cidrs
     content {
@@ -50,6 +49,28 @@ resource "aws_security_group" "alb" {
     cidr_blocks = var.alb_ingress_cidrs
   }
 
+  # --- FIX 1: Add SSH Access for Web Tier ---
+  # Allows you to SSH to Web Servers via Public IP (or Bastion if configured)
+  dynamic "ingress" {
+    for_each = var.ssh_ingress_cidrs
+    content {
+      from_port   = 22
+      to_port     = 22
+      protocol    = "tcp"
+      cidr_blocks = [ingress.value]
+      description = "SSH from Admin IP"
+    }
+  }
+  
+  # Also allow SSH from Bastion (in case you jump from Bastion -> Web)
+  ingress {
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
+    security_groups = [aws_security_group.bastion.id]
+    description     = "SSH from Bastion"
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -68,7 +89,6 @@ resource "aws_security_group" "app" {
   description = "App SG - allow app traffic from ALB"
   vpc_id      = var.vpc_id
 
-  # Traffic from Web
   ingress {
     from_port       = var.app_port
     to_port         = var.app_port
@@ -76,7 +96,6 @@ resource "aws_security_group" "app" {
     security_groups = [aws_security_group.alb.id]
   }
 
-  # Ping from Web (for testing)
   ingress {
     from_port       = -1
     to_port         = -1
@@ -84,7 +103,7 @@ resource "aws_security_group" "app" {
     security_groups = [aws_security_group.alb.id]
   }
 
-  # --- SSH ONLY FROM BASTION ---
+  # SSH from Bastion (Already working, keep this)
   ingress {
     from_port       = 22
     to_port         = 22
@@ -116,6 +135,16 @@ resource "aws_security_group" "db" {
     to_port         = var.db_port
     protocol        = "tcp"
     security_groups = [aws_security_group.app.id]
+  }
+
+  # --- FIX 2: Add SSH Access from Bastion ---
+  # Allows Ansible to jump Bastion -> DB
+  ingress {
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
+    security_groups = [aws_security_group.bastion.id]
+    description     = "SSH from Bastion Host"
   }
 
   egress {
