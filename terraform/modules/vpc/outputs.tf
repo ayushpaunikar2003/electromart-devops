@@ -13,3 +13,8 @@ output "private_app_subnet_ids" {
 output "private_db_subnet_ids" {
   value = aws_subnet.private_db[*].id
 }
+
+output "nat_public_ip" {
+  description = "Public IP of the NAT Instance"
+  value       = aws_instance.nat.public_ip
+}
