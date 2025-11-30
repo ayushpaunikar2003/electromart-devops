@@ -15,6 +15,6 @@ output "private_db_subnet_ids" {
 }
 
 output "nat_public_ip" {
-  description = "Public IP of the NAT Instance"
-  value       = aws_instance.nat.public_ip
+  description = "Public IP of the NAT Gateway"
+  value       = aws_eip.nat.public_ip
 }

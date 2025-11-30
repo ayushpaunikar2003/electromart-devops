@@ -1,15 +1,8 @@
 terraform {
   required_version = ">= 1.6.0"
-
   required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 5.0"
-    }
-    http = {
-      source  = "hashicorp/http"
-      version = "~> 3.0"
-    }
+    aws = { source = "hashicorp/aws", version = "~> 5.0" }
+    http = { source = "hashicorp/http", version = "~> 3.0" }
   }
 }
 
@@ -17,7 +10,6 @@ provider "aws" {
   region = var.region
 }
 
-# Auto-detect your public IP for SSH access
 data "http" "my_public_ip" {
   url = "http://ipv4.icanhazip.com"
 }
@@ -44,10 +36,6 @@ module "vpc" {
   private_db_subnet_cidrs  = var.private_db_subnet_cidrs
   availability_zones       = var.availability_zones
   tags                     = local.common_tags
-
-  # --- NEW: PASS THESE TO VPC MODULE FOR NAT INSTANCE ---
-  ami_id   = var.ami_id
-  key_name = var.key_name
 }
 
 # -----------------------------
@@ -75,11 +63,9 @@ module "ec2" {
   app_subnet_ids = module.vpc.private_app_subnet_ids
   db_subnet_ids  = module.vpc.private_db_subnet_ids
 
-  web_sg_id = module.security_group.alb_sg_id
-  app_sg_id = module.security_group.app_sg_id
-  db_sg_id  = module.security_group.db_sg_id
-  
-  # --- NEW: Pass the Bastion SG ID ---
+  web_sg_id     = module.security_group.alb_sg_id
+  app_sg_id     = module.security_group.app_sg_id
+  db_sg_id      = module.security_group.db_sg_id
   bastion_sg_id = module.security_group.bastion_sg_id
 
   instance_type = var.instance_type

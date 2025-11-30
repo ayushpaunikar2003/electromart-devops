@@ -3,14 +3,14 @@ output "bastion_ip" {
   value       = module.ec2.bastion_public_ip
 }
 
-output "nat_instance_ip" {
-  description = "Public IP of the NAT Router"
-  value       = module.vpc.nat_public_ip
+output "web_ips" {
+  description = "Public IP of Web Server"
+  value       = module.ec2.web_public_ips
 }
 
-output "web_ips" {
-  description = "Copy these for [web] group"
-  value       = module.ec2.web_public_ips
+output "web_private_ips" {
+  description = "Private IP of Web Server (Use for Ansible)"
+  value       = module.ec2.web_private_ips
 }
 
 output "app_ips" {
@@ -21,9 +21,4 @@ output "app_ips" {
 output "db_ips" {
   description = "Copy these for [db] group"
   value       = module.ec2.db_private_ips
-}
-
-output "web_private_ips" {
-  description = "Private IPs for [web] group (Use this for Ansible)"
-  value       = module.ec2.web_private_ips
 }
