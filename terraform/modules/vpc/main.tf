@@ -75,6 +75,42 @@ resource "aws_security_group" "nat" {
 }
 
 # 2. The NAT Instance Itself
+# -------------------------------------------------------------------------
+# NAT INSTANCE (Automated)
+# -------------------------------------------------------------------------
+
+resource "aws_security_group" "nat" {
+  name        = "${var.project}-nat-sg"
+  description = "Security Group for NAT Instance"
+  vpc_id      = aws_vpc.this.id
+
+  # Allow all traffic from inside the VPC
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = [var.vpc_cidr]
+  }
+
+  # Allow SSH for debugging
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # Allow outbound
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = merge(var.tags, { Name = "${var.project}-nat-sg" })
+}
+
 resource "aws_instance" "nat" {
   ami                         = var.ami_id
   instance_type               = "t2.micro"
@@ -83,15 +119,28 @@ resource "aws_instance" "nat" {
   vpc_security_group_ids      = [aws_security_group.nat.id]
   associate_public_ip_address = true
   
-  # CRITICAL: Disable Source/Dest Check for routing to work
-  source_dest_check           = false
+  # --- AUTOMATION 1: AWS CONSOLE SETTING ---
+  # This automatically unchecks "Source/Destination Check" in the AWS Console
+  # You never have to click this manually again.
+  source_dest_check = false
 
-  # Configures Linux to act as a router (IP Forwarding + Masquerade)
+  # --- AUTOMATION 2: LINUX COMMANDS ---
+  # This script runs automatically when the instance turns on (as root)
   user_data = <<-EOF
               #!/bin/bash
-              sysctl -w net.ipv4.ip_forward=1
+              # 1. Enable IP Forwarding
+              echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf
+              sysctl -p
+              
+              # 2. Configure IPTables Masquerading
               /sbin/iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-              /sbin/iptables -F
+              
+              # 3. (Optional) Install persistence so it survives reboots
+              # checking if apt is free first
+              while fuser /var/lib/dpkg/lock >/dev/null 2>&1 ; do sleep 1 ; done
+              apt-get update -y
+              apt-get install -y iptables-persistent
+              netfilter-persistent save
               EOF
 
   tags = merge(var.tags, { Name = "${var.project}-nat-instance" })
