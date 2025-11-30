@@ -22,3 +22,8 @@ output "db_ips" {
   description = "Copy these for [db] group"
   value       = module.ec2.db_private_ips
 }
+
+output "web_private_ips" {
+  description = "Private IPs for [web] group (Use this for Ansible)"
+  value       = module.ec2.web_private_ips
+}

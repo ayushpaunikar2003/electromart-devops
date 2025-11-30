@@ -26,3 +26,8 @@ output "bastion_public_ip" {
   description = "Public IP of the Bastion Host"
   value       = aws_instance.bastion.public_ip
 }
+
+output "web_private_ips" {
+  description = "Private IPs of the Web Servers"
+  value       = aws_instance.web[*].private_ip
+}
