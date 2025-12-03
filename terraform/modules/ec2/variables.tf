@@ -28,6 +28,11 @@ variable "db_sg_id" {
   type        = string
 }
 
+variable "bastion_sg_id" {
+  description = "Security group ID for the Bastion Host"
+  type        = string
+}
+
 variable "instance_type" {
   description = "EC2 instance type for all tiers"
   type        = string
@@ -37,7 +42,6 @@ variable "instance_type" {
 variable "ami_id" {
   description = "AMI ID for EC2 instances"
   type        = string
-  default     = "ami-02b8269d5e85954ef"
 }
 
 variable "key_name" {
@@ -51,7 +55,9 @@ variable "common_tags" {
   default     = {}
 }
 
-variable "bastion_sg_id" {
-  description = "Security group ID for the Bastion Host"
+# --- NEW: IAM Instance Profile Variable ---
+variable "iam_instance_profile" {
+  description = "IAM instance profile name to attach to EC2 instances"
   type        = string
+  default     = null
 }

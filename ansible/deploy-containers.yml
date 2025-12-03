@@ -1,0 +1,79 @@
+---
+- name: Deploy Electromart backend & frontend using Docker
+  hosts: web:app
+  become: true  # This allows sudo for Docker commands on remote hosts
+
+  vars:
+    aws_region: "ap-south-1"
+    ecr_registry: "495599739939.dkr.ecr.ap-south-1.amazonaws.com"
+
+    backend_image: "{{ ecr_registry }}/electromart/backend:latest"
+    frontend_image: "{{ ecr_registry }}/electromart/frontend:latest"
+
+    backend_container_name: "electromart-backend"
+    frontend_container_name: "electromart-frontend"
+
+    backend_port: 8091
+    mongo_port: 27017
+    mongo_db: "electromart"
+
+    # Use the first host in [db] group as MongoDB host
+    mongo_host: "{{ hostvars[groups['db'][0]].ansible_host }}"
+
+  tasks:
+    # --------------------- ECR LOGIN (USING IAM ROLE) ---------------------
+    - name: Log in to ECR on target hosts using IAM Role
+      shell: |
+        aws ecr get-login-password --region {{ aws_region }} | docker login --username AWS --password-stdin {{ ecr_registry }}
+      register: login_result
+      changed_when: "'Login Succeeded' in login_result.stdout"
+
+    # --------------------- BACKEND ON APP SERVER(S) ---------------------
+    - name: Pull backend image on app servers
+      when: "'app' in group_names"
+      shell: docker pull {{ backend_image }}
+      register: backend_pull
+      changed_when: "'Status: Downloaded' in backend_pull.stdout or 'Image is up to date' in backend_pull.stdout"
+
+    - name: Stop old backend container if exists
+      when: "'app' in group_names"
+      shell: docker rm -f {{ backend_container_name }} || true
+
+    - name: Run backend container
+      when: "'app' in group_names"
+      shell: |
+        docker run -d \
+          --name {{ backend_container_name }} \
+          --restart always \
+          -p {{ backend_port }}:{{ backend_port }} \
+          -e MONGO_URI="mongodb://{{ mongo_host }}:{{ mongo_port }}/{{ mongo_db }}" \
+          {{ backend_image }}
+
+    # --------------------- FRONTEND ON WEB SERVER(S) --------------------
+    # FIX: Stop System NGINX to free up Port 80 for Docker
+    - name: Stop system Nginx (to free port 80)
+      when: "'web' in group_names"
+      service:
+        name: nginx
+        state: stopped
+        enabled: no
+      ignore_errors: yes
+
+    - name: Pull frontend image on web servers
+      when: "'web' in group_names"
+      shell: docker pull {{ frontend_image }}
+      register: frontend_pull
+      changed_when: "'Status: Downloaded' in frontend_pull.stdout or 'Image is up to date' in frontend_pull.stdout"
+
+    - name: Stop old frontend container if exists
+      when: "'web' in group_names"
+      shell: docker rm -f {{ frontend_container_name }} || true
+
+    - name: Run frontend container (NGINX)
+      when: "'web' in group_names"
+      shell: |
+        docker run -d \
+          --name {{ frontend_container_name }} \
+          --restart always \
+          -p 80:80 \
+          {{ frontend_image }}

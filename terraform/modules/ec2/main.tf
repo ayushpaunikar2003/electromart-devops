@@ -3,12 +3,18 @@
 # -------------------------------------------------------------------------
 resource "aws_instance" "bastion" {
   ami                         = var.ami_id
-  instance_type               = "t2.micro"
+  
+  # CHANGE THIS: Use the variable (t4g.small) instead of "t2.micro"
+  instance_type               = var.instance_type 
+  
   # Place in the first Public Subnet
   subnet_id                   = var.web_subnet_ids[0]
   key_name                    = var.key_name
   vpc_security_group_ids      = [var.bastion_sg_id]
   associate_public_ip_address = true
+
+  # Attach IAM Role (Good practice to keep consistent)
+  iam_instance_profile        = var.iam_instance_profile
 
   tags = merge(var.common_tags, { Name = "electromart-bastion", Tier = "bastion" })
 }
@@ -23,9 +29,10 @@ resource "aws_instance" "web" {
   subnet_id              = var.web_subnet_ids[count.index]
   key_name               = var.key_name
   vpc_security_group_ids = [var.web_sg_id]
-
-  # CRITICAL: Ensures you get a Public IP to access NGINX
   associate_public_ip_address = true
+
+  # Attach IAM Role
+  iam_instance_profile = var.iam_instance_profile
 
   user_data = <<-EOF
               #!/bin/bash
@@ -49,10 +56,12 @@ resource "aws_instance" "app" {
   key_name               = var.key_name
   vpc_security_group_ids = [var.app_sg_id]
 
+  # Attach IAM Role
+  iam_instance_profile = var.iam_instance_profile
+
   user_data = <<-EOF
               #!/bin/bash
               apt-get update -y
-              # Placeholder: Install Node.js or Docker here
               EOF
 
   tags = merge(var.common_tags, { Name = "electromart-app-${count.index + 1}", Tier = "app" })
@@ -68,6 +77,9 @@ resource "aws_instance" "db" {
   subnet_id              = var.db_subnet_ids[count.index]
   key_name               = var.key_name
   vpc_security_group_ids = [var.db_sg_id]
+
+  # Attach IAM Role
+  iam_instance_profile = var.iam_instance_profile
 
   user_data = <<-EOF
               #!/bin/bash

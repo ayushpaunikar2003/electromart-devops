@@ -23,6 +23,16 @@ locals {
 }
 
 # -----------------------------
+# IAM MODULE (New!)
+# -----------------------------
+module "iam" {
+  source      = "./modules/iam"
+  project     = var.project
+  environment = var.environment
+  tags        = local.common_tags
+}
+
+# -----------------------------
 # VPC MODULE
 # -----------------------------
 module "vpc" {
@@ -67,6 +77,9 @@ module "ec2" {
   app_sg_id     = module.security_group.app_sg_id
   db_sg_id      = module.security_group.db_sg_id
   bastion_sg_id = module.security_group.bastion_sg_id
+
+  # --- NEW: Pass the IAM Profile ---
+  iam_instance_profile = module.iam.instance_profile_name
 
   instance_type = var.instance_type
   ami_id        = var.ami_id

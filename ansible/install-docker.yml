@@ -4,7 +4,6 @@
   become: true
   vars:
     docker_apt_arch: "{{ 'amd64' if ansible_architecture == 'x86_64' else 'arm64' }}"
-    # This path matches where we will save the key AND where the repo looks for it
     docker_keyring: /usr/share/keyrings/docker-archive-keyring.gpg
 
   tasks:
@@ -16,9 +15,8 @@
       until: apt_result is success
       retries: 5
       delay: 10
-      # This retry logic helps wait for the NAT instance to wake up
 
-    - name: Install packages required for apt over HTTPS
+    - name: Install prerequisites (including unzip for AWS CLI)
       apt:
         name:
           - apt-transport-https
@@ -26,9 +24,9 @@
           - curl
           - gnupg
           - lsb-release
+          - unzip   # <--- Added for AWS CLI v2
         state: present
 
-    # --- THE FIX: Download key to the SPECIFIC path ---
     - name: Download Docker GPG key (dearmored)
       shell: |
         curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o {{ docker_keyring }}
@@ -54,7 +52,24 @@
           - containerd.io
           - docker-buildx-plugin
           - docker-compose-plugin
+          # awscli REMOVED - We will install v2 manually below
         state: present
+
+    # --- NEW: AWS CLI v2 Installation ---
+    - name: Download AWS CLI v2
+      get_url:
+        url: "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"
+        dest: "/tmp/awscliv2.zip"
+
+    - name: Unzip AWS CLI v2
+      unarchive:
+        src: "/tmp/awscliv2.zip"
+        dest: "/tmp"
+        remote_src: yes
+
+    - name: Install AWS CLI v2
+      command: /tmp/aws/install --update
+    # ------------------------------------
 
     - name: Ensure docker service is started & enabled
       service:
@@ -77,10 +92,10 @@
       changed_when: false
       failed_when: docker_check.rc != 0
 
-    - name: Show Docker version
-      command: docker --version
-      register: docker_version
+    - name: Check AWS CLI version
+      command: aws --version
+      register: aws_version
       changed_when: false
 
     - debug:
-        msg: "Docker installed successfully: {{ docker_version.stdout }}"
+        msg: "AWS CLI installed: {{ aws_version.stdout }}"
