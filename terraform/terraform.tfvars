@@ -3,20 +3,26 @@ region      = "ap-south-1"
 
 # VPC Configuration
 vpc_cidr                 = "10.0.0.0/16"
-public_subnet_cidrs      = ["10.0.1.0/24", "10.0.2.0/24"]
-private_app_subnet_cidrs = ["10.0.11.0/24", "10.0.12.0/24"]
-private_db_subnet_cidrs  = ["10.0.21.0/24", "10.0.22.0/24"]
-availability_zones       = ["ap-south-1a", "ap-south-1b"]
+
+# CHANGED: Only 1 subnet per tier (Removing the second zone CIDs)
+public_subnet_cidrs      = ["10.0.1.0/24"]
+private_app_subnet_cidrs = ["10.0.11.0/24"]
+private_db_subnet_cidrs  = ["10.0.21.0/24"]
+
+# CHANGED: Only 1 Availability Zone
+availability_zones       = ["ap-south-1a"]
 
 # Security Group
 alb_ingress_cidrs = ["0.0.0.0/0"]
 
-# --- ARM CONFIGURATION (NEW) ---
-# Using Graviton2 (Free Tier Trial eligible)
+# --- ARM CONFIGURATION ---
 instance_type = "t4g.small"
-
-# Ubuntu 24.04 LTS (ARM64 Architecture)
-ami_id        = "ami-0bdf6fbe8c9e0565a"
-
-# NEW Key Pair Name
+ami_id        = "ami-04eeb425707fa843c" # ARM Ubuntu 24.04
 key_name      = "electromart-key"
+
+
+# Change App Port to match your Docker container
+app_port = 8091
+
+# Ensure DB Port matches too (standard is 27017)
+db_port  = 27017

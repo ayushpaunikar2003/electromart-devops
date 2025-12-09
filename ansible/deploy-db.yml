@@ -1,0 +1,37 @@
+---
+- name: Deploy MongoDB
+  hosts: db
+  become: true
+  tasks:
+    - name: Install Python Docker SDK (Required for Ansible)
+      apt:
+        name: python3-docker
+        state: present
+        update_cache: yes
+
+    - name: Create MongoDB Data Directory
+      file:
+        path: /data/db
+        state: directory
+        mode: '0755'
+
+    - name: Start MongoDB Container
+      community.docker.docker_container:
+        name: mongodb
+        image: mongo:6.0
+        state: started
+        restart_policy: always
+        ports:
+          - "27017:27017"
+        volumes:
+          - /data/db:/data/db
+        env:
+          MONGO_INITDB_DATABASE: electromart
+
+    - name: Verify MongoDB is running
+      command: docker ps
+      register: docker_status
+      changed_when: false
+
+    - debug:
+        msg: "{{ docker_status.stdout }}"

@@ -1,13 +1,14 @@
 ---
-- name: Install Docker on hosts
+- name: Install Docker and AWS CLI on hosts
   hosts: all
   become: true
   vars:
+    # Auto-detect architecture: x86_64 -> amd64, aarch64 -> arm64 (for t4g instances)
     docker_apt_arch: "{{ 'amd64' if ansible_architecture == 'x86_64' else 'arm64' }}"
     docker_keyring: /usr/share/keyrings/docker-archive-keyring.gpg
 
   tasks:
-    - name: Update apt cache (initial check)
+    - name: Update apt cache (initial check with retry for NAT)
       apt:
         update_cache: yes
         cache_valid_time: 3600
@@ -16,7 +17,7 @@
       retries: 5
       delay: 10
 
-    - name: Install prerequisites (including unzip for AWS CLI)
+    - name: Install prerequisites
       apt:
         name:
           - apt-transport-https
@@ -24,9 +25,10 @@
           - curl
           - gnupg
           - lsb-release
-          - unzip   # <--- Added for AWS CLI v2
+          - unzip  # Required for AWS CLI v2 installation
         state: present
 
+    # --- Docker Setup ---
     - name: Download Docker GPG key (dearmored)
       shell: |
         curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o {{ docker_keyring }}
@@ -52,13 +54,14 @@
           - containerd.io
           - docker-buildx-plugin
           - docker-compose-plugin
-          # awscli REMOVED - We will install v2 manually below
         state: present
 
-    # --- NEW: AWS CLI v2 Installation ---
+    # --- AWS CLI v2 Setup (Manual Install) ---
     - name: Download AWS CLI v2
       get_url:
-        url: "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"
+        url: "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" 
+        # Note: Using aarch64 for your ARM instances. 
+        # If you revert to t2.micro later, change to: awscli-exe-linux-x86_64.zip
         dest: "/tmp/awscliv2.zip"
 
     - name: Unzip AWS CLI v2
@@ -69,8 +72,10 @@
 
     - name: Install AWS CLI v2
       command: /tmp/aws/install --update
-    # ------------------------------------
+      register: aws_install
+      changed_when: "'You can now run' in aws_install.stdout"
 
+    # --- Service & Users ---
     - name: Ensure docker service is started & enabled
       service:
         name: docker
@@ -83,10 +88,10 @@
         groups: docker
         append: yes
 
-    - name: Reset ssh connection to allow user changes to affect 'current login user'
+    - name: Reset ssh connection to apply group changes
       meta: reset_connection
 
-    - name: Verify docker is usable without sudo
+    - name: Verify docker is usable
       command: docker ps
       register: docker_check
       changed_when: false
@@ -98,4 +103,4 @@
       changed_when: false
 
     - debug:
-        msg: "AWS CLI installed: {{ aws_version.stdout }}"
+        msg: "Setup Complete. AWS CLI: {{ aws_version.stdout }}"
