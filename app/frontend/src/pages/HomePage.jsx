@@ -14,10 +14,10 @@ const HomePage = () => {
   return (
     <Box>
       {/* Hero Section */}
-      <Box 
-        sx={{ 
+      <Box
+        sx={{
           position: 'relative',
-          pt: 12, pb: 12, 
+          pt: 12, pb: 12,
           background: 'url(https://placehold.co/1200x400/1976d2/FFFFFF?text=Welcome+to+ElectroShop) center/cover no-repeat',
           color: 'white',
           textAlign: 'center',
@@ -61,7 +61,7 @@ const HomePage = () => {
           ))}
         </Grid>
       </Container>
-      
+
       {/* Latest Arrivals Section */}
       <Container sx={{ py: 4 }}>
         <Typography variant="h4" align="center" gutterBottom sx={{ mb: 4 }}>

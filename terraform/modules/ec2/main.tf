@@ -3,10 +3,10 @@
 # -------------------------------------------------------------------------
 resource "aws_instance" "bastion" {
   ami                         = var.ami_id
-  
+
   # CHANGE THIS: Use the variable (t4g.small) instead of "t2.micro"
-  instance_type               = var.instance_type 
-  
+  instance_type               = var.instance_type
+
   # Place in the first Public Subnet
   subnet_id                   = var.web_subnet_ids[0]
   key_name                    = var.key_name

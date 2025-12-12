@@ -94,7 +94,7 @@ export const products = [
     stock: 18,
     description: 'High-fidelity audio, adaptive EQ, active noise cancellation, and spatial audio in a premium design.'
   },
-  
+
   // Cameras
   {
     id: 'prod_10',

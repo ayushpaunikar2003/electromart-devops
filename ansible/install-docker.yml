@@ -59,8 +59,8 @@
     # --- AWS CLI v2 Setup (Manual Install) ---
     - name: Download AWS CLI v2
       get_url:
-        url: "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" 
-        # Note: Using aarch64 for your ARM instances. 
+        url: "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip"
+        # Note: Using aarch64 for your ARM instances.
         # If you revert to t2.micro later, change to: awscli-exe-linux-x86_64.zip
         dest: "/tmp/awscliv2.zip"
 

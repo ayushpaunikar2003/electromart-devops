@@ -47,9 +47,9 @@ const ContactUsPage = () => {
             </Grid>
         </Grid>
       </Paper>
-      <MessageDialog 
-        open={snackbarOpen} 
-        handleClose={() => setSnackbarOpen(false)} 
+      <MessageDialog
+        open={snackbarOpen}
+        handleClose={() => setSnackbarOpen(false)}
         message="Your message has been sent successfully!"
       />
     </Container>

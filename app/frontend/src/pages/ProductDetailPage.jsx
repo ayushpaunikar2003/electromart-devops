@@ -12,7 +12,7 @@ const ProductDetailPage = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
   const product = useSelector((state) => state.products.items.find((p) => p.id === id));
-  
+
   const [quantity, setQuantity] = useState(1);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
 
@@ -57,7 +57,7 @@ const ProductDetailPage = () => {
                     color={product.stock > 0 ? 'success' : 'error'}
                     sx={{ mb: 3, fontWeight: 'bold' }}
                 />
-                
+
                 {product.stock > 0 && (
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
                         <QuantitySelector quantity={quantity} setQuantity={setQuantity} maxStock={product.stock} />
@@ -74,9 +74,9 @@ const ProductDetailPage = () => {
                 )}
             </Grid>
         </Grid>
-        <MessageDialog 
-            open={snackbarOpen} 
-            handleClose={() => setSnackbarOpen(false)} 
+        <MessageDialog
+            open={snackbarOpen}
+            handleClose={() => setSnackbarOpen(false)}
             message="Item added to cart!"
         />
     </Box>

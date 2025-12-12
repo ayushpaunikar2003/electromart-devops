@@ -19,10 +19,10 @@ const Navbar = () => {
   return (
     <AppBar position="sticky" sx={{ backgroundColor: 'background.paper', color: 'text.primary', boxShadow: 1 }}>
       <Toolbar>
-        <Typography 
-          variant="h6" 
-          component={RouterLink} 
-          to="/" 
+        <Typography
+          variant="h6"
+          component={RouterLink}
+          to="/"
           sx={{ flexGrow: 1, fontWeight: 'bold', color: 'primary.main', textDecoration: 'none' }}
         >
           ElectroShop

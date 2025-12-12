@@ -66,13 +66,13 @@ resource "aws_subnet" "private_app" {
 
 resource "aws_route_table" "private_app" {
   vpc_id = aws_vpc.this.id
-  
+
   # Route 0.0.0.0/0 to the NAT GATEWAY
   route {
     cidr_block     = "0.0.0.0/0"
     nat_gateway_id = aws_nat_gateway.this.id
   }
-  
+
   tags = merge(var.tags, { Name = "${var.project}-private-app-rt" })
 }
 
@@ -95,13 +95,13 @@ resource "aws_subnet" "private_db" {
 
 resource "aws_route_table" "private_db" {
   vpc_id = aws_vpc.this.id
-  
+
   # Route 0.0.0.0/0 to the NAT GATEWAY
   route {
     cidr_block     = "0.0.0.0/0"
     nat_gateway_id = aws_nat_gateway.this.id
   }
-  
+
   tags = merge(var.tags, { Name = "${var.project}-private-db-rt" })
 }
 
