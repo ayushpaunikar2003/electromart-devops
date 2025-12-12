@@ -6,18 +6,16 @@ resource "aws_security_group" "bastion" {
   description = "Allow SSH and Monitoring"
   vpc_id      = var.vpc_id
 
-  # SSH from Admin
-  dynamic "ingress" {
-    for_each = var.ssh_ingress_cidrs
-    content {
-      from_port   = 22
-      to_port     = 22
-      protocol    = "tcp"
-      cidr_blocks = [ingress.value]
-    }
+  # ✅ FIX: Allow SSH from Anywhere (Required for GitHub Actions dynamic IPs)
+  ingress {
+    description = "SSH from Internet"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # --- FIX: Allow Prometheus to scrape ITSELF (Node Exporter/cAdvisor) ---
+  # Monitoring Ports (Self-scrape)
   ingress {
     from_port = 9090
     to_port   = 9090
@@ -77,7 +75,7 @@ resource "aws_security_group" "alb" {
     security_groups = [aws_security_group.bastion.id]
   }
 
-  # --- FIX: Allow Monitoring from Bastion ---
+  # Monitoring from Bastion
   ingress {
     from_port       = 9100
     to_port         = 9100
@@ -127,7 +125,7 @@ resource "aws_security_group" "app" {
     security_groups = [aws_security_group.bastion.id]
   }
 
-  # --- FIX: Allow Monitoring from Bastion ---
+  # Monitoring from Bastion
   ingress {
     from_port       = 9100
     to_port         = 9100
@@ -142,7 +140,8 @@ resource "aws_security_group" "app" {
     security_groups = [aws_security_group.bastion.id]
     description     = "cAdvisor"
   }
-  # Allow Bastion to scrape Backend Metrics (8091)
+
+  # Allow Bastion to scrape Backend Metrics
   ingress {
     from_port       = var.app_port
     to_port         = var.app_port
@@ -185,7 +184,7 @@ resource "aws_security_group" "db" {
     security_groups = [aws_security_group.bastion.id]
   }
 
-  # --- FIX: Allow Monitoring from Bastion ---
+  # Monitoring from Bastion
   ingress {
     from_port       = 9100
     to_port         = 9100
