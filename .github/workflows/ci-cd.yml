@@ -32,7 +32,7 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      # FIX: Updated filter to use 'electromart-web-1'
+      # Find Web Server Public IP for Frontend Build
       - name: 🔍 Find Web Server IP (LB_IP)
         id: get-ip
         run: |
@@ -70,7 +70,7 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPO_FRONTEND:$IMAGE_TAG
 
   # ------------------------------------------------------------------
-  # JOB 2: DEPLOY
+  # JOB 2: DEPLOY (Full Provisioning Sequence)
   # ------------------------------------------------------------------
   deploy:
     name: 🚀 Deploy
@@ -87,7 +87,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      # FIX: Updated filter to use 'electromart-bastion' (matches your output)
+      # Find Bastion Public IP to Create Tunnel
       - name: 🔍 Find Bastion IP
         id: get-bastion
         run: |
@@ -114,12 +114,19 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-      # FIX: Updated filters to use '-1' suffix
+      # Generate Inventory with correct Private IPs
       - name: Generate Inventory
         run: |
+          echo "🔍 Fetching Private IPs from AWS..."
           WEB_PRIVATE=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=electromart-web-1" --query "Reservations[].Instances[].PrivateIpAddress" --output text)
           APP_PRIVATE=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=electromart-app-1" --query "Reservations[].Instances[].PrivateIpAddress" --output text)
           DB_PRIVATE=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=electromart-db-1" --query "Reservations[].Instances[].PrivateIpAddress" --output text)
+
+          # Add error handling if IPs are missing
+          if [[ -z "$WEB_PRIVATE" || -z "$APP_PRIVATE" || -z "$DB_PRIVATE" ]]; then
+            echo "❌ Error: Could not find Private IPs for one or more instances."
+            exit 1
+          fi
 
           cd ansible
           cat > inventory.ini <<EOF
@@ -149,7 +156,24 @@ jobs:
           ansible_ssh_common_args='-o StrictHostKeyChecking=no -o IdentitiesOnly=yes -o ProxyCommand="ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i ~/.ssh/id_rsa -W %h:%p -q ubuntu@${{ env.BASTION_IP }}"'
           EOF
 
-      - name: Run Playbook
+      # --- EXECUTE PLAYBOOKS (The Full Sequence) ---
+
+      - name: 🛠️ 1. Install Docker & Tools
+        run: |
+          cd ansible
+          ansible-playbook -i inventory.ini install-docker.yml
+
+      - name: 🗄️ 2. Deploy Database
+        run: |
+          cd ansible
+          ansible-playbook -i inventory.ini deploy-db.yml
+
+      - name: 🚀 3. Deploy Containers (App)
         run: |
           cd ansible
           ansible-playbook -i inventory.ini deploy-containers.yml
+
+      - name: 📊 4. Deploy Monitoring
+        run: |
+          cd ansible
+          ansible-playbook -i inventory.ini deploy-monitoring.yml
