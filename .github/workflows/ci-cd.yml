@@ -12,7 +12,7 @@ env:
 
 jobs:
   # ------------------------------------------------------------------
-  # JOB 1: BUILD & PUSH (Fetches Web IP Dynamically)
+  # JOB 1: BUILD & PUSH
   # ------------------------------------------------------------------
   build-and-push:
     name: 🏗️ Build & Push
@@ -21,7 +21,6 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # 1. Configure AWS (So we can query IPs and Push images)
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -33,27 +32,25 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      # 2. Dynamic IP Lookup (The Fix!)
+      # FIX: Updated filter to use 'electromart-web-1'
       - name: 🔍 Find Web Server IP (LB_IP)
         id: get-ip
         run: |
           echo "Querying AWS for Web Server Public IP..."
-          # Find the instance tagged 'electromart-web' and get its Public IP
           LB_IP=$(aws ec2 describe-instances \
-            --filters "Name=tag:Name,Values=electromart-web" "Name=instance-state-name,Values=running" \
+            --filters "Name=tag:Name,Values=electromart-web-1" "Name=instance-state-name,Values=running" \
             --query "Reservations[].Instances[].PublicIpAddress" \
             --output text)
 
           if [[ -z "$LB_IP" || "$LB_IP" == "None" ]]; then
-            echo "❌ Error: Could not find Web Server. Is it running?"
+            echo "❌ Error: Could not find Web Server (electromart-web-1). Is it running?"
             exit 1
           fi
 
           echo "✅ Found Web IP: $LB_IP"
           echo "LB_IP=$LB_IP" >> $GITHUB_ENV
 
-      # 3. Build & Push Backend
-      - name: Build Backend
+      - name: Build & Push Backend
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: latest
@@ -61,8 +58,7 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPO_BACKEND:$IMAGE_TAG ./app/backend
           docker push $ECR_REGISTRY/$ECR_REPO_BACKEND:$IMAGE_TAG
 
-      # 4. Build & Push Frontend (Uses Dynamic LB_IP)
-      - name: Build Frontend
+      - name: Build & Push Frontend
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: latest
@@ -74,7 +70,7 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPO_FRONTEND:$IMAGE_TAG
 
   # ------------------------------------------------------------------
-  # JOB 2: DEPLOY (Fetches Bastion IP Dynamically)
+  # JOB 2: DEPLOY
   # ------------------------------------------------------------------
   deploy:
     name: 🚀 Deploy
@@ -91,7 +87,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      # 1. Dynamic Bastion Lookup (The Fix!)
+      # FIX: Updated filter to use 'electromart-bastion' (matches your output)
       - name: 🔍 Find Bastion IP
         id: get-bastion
         run: |
@@ -109,24 +105,21 @@ jobs:
           echo "✅ Found Bastion IP: $BASTION_IP"
           echo "BASTION_IP=$BASTION_IP" >> $GITHUB_ENV
 
-      # 2. Install Ansible
       - name: Install Ansible
         run: pip install ansible boto3 botocore
 
-      # 3. Setup SSH Key
       - name: Setup SSH Key
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-      # 4. Generate Inventory (Using AWS CLI for Private IPs)
+      # FIX: Updated filters to use '-1' suffix
       - name: Generate Inventory
         run: |
-          # Fetch Private IPs for internal connection
-          WEB_PRIVATE=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=electromart-web" --query "Reservations[].Instances[].PrivateIpAddress" --output text)
-          APP_PRIVATE=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=electromart-app" --query "Reservations[].Instances[].PrivateIpAddress" --output text)
-          DB_PRIVATE=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=electromart-db" --query "Reservations[].Instances[].PrivateIpAddress" --output text)
+          WEB_PRIVATE=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=electromart-web-1" --query "Reservations[].Instances[].PrivateIpAddress" --output text)
+          APP_PRIVATE=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=electromart-app-1" --query "Reservations[].Instances[].PrivateIpAddress" --output text)
+          DB_PRIVATE=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=electromart-db-1" --query "Reservations[].Instances[].PrivateIpAddress" --output text)
 
           cd ansible
           cat > inventory.ini <<EOF
@@ -156,7 +149,6 @@ jobs:
           ansible_ssh_common_args='-o StrictHostKeyChecking=no -o IdentitiesOnly=yes -o ProxyCommand="ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i ~/.ssh/id_rsa -W %h:%p -q ubuntu@${{ env.BASTION_IP }}"'
           EOF
 
-      # 5. Run Deployment
       - name: Run Playbook
         run: |
           cd ansible
