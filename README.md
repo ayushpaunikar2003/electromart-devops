@@ -193,5 +193,23 @@ For security, the monitoring stack is not exposed to the public internet. Use an
 
 -----
 
-**Author:** Ayush Paunikar <br>
-**GitHub:** [Electromart-Devops](https://www.google.com/search?q=https://github.com/ayushpaunikar2003)
+## 👨‍💻 Author
+
+**Ayush Paunikar**
+* **Role:** DevOps Intern & Cloud Engineer
+* **GitHub:** [@ayushpaunikar2003](https://github.com/ayushpaunikar2003)
+* **Project:** [Electromart-Devops](https://github.com/ayushpaunikar2003/electromart-devops)
+
+---
+
+## 🤝 Show Your Support
+
+If you found this project helpful or interesting, please verify it by giving the repository a ⭐️ **Star**!
+
+> "Automation is not about replacing humans; it's about replacing the boring stuff so humans can do the interesting stuff."
+
+---
+
+## 📄 License
+
+Distributed under the **MIT License**. See `LICENSE` for more information.
