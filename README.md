@@ -1,5 +1,3 @@
-# ⚡ Electromart – End-to-End DevOps Automation on AWS
-
 <div align="center">
 
 # ⚡ Electromart – End-to-End DevOps Automation on AWS
