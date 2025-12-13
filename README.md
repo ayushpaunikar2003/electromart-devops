@@ -9,9 +9,9 @@
 
 ## 📖 Project Overview
 
-**Electromart** is a full-stack MERN (MongoDB, Express, React, Node) e-commerce application deployed on **AWS** using a production-grade **DevOps pipeline**.
+**Electromart** is a full-stack, **containerized** MERN (MongoDB, Express, React, Node) e-commerce application deployed on **AWS** using a production-grade **DevOps pipeline**.
 
-This project demonstrates a complete **Infrastructure as Code (IaC)** and **CI/CD** workflow. It transforms a legacy manual setup into a **Self-Healing, Zero-Trust Architecture** using **Terraform**, **Ansible**, **GitHub Actions**, and **Prometheus/Grafana**.
+This project demonstrates a complete **Infrastructure as Code (IaC)** and **CI/CD** workflow. It transforms a legacy manual setup into a **Self-Healing, Zero-Trust Architecture** using **Docker**, **Terraform**, **Ansible**, **GitHub Actions**, and **Prometheus/Grafana**.
 
 ---
 
@@ -146,7 +146,7 @@ electromart-devops/
 ### Step 1: Clone Repository
 
 ```bash
-git clone [https://github.com/ayushpaunikar2003/electromart-devops.git](https://github.com/ayushpaunikar2003/electromart-devops.git)
+git clone [https://github.com/ayushpaunikar2003/electromart-devops.git]
 cd electromart-devops
 ```
 
@@ -193,5 +193,5 @@ For security, the monitoring stack is not exposed to the public internet. Use an
 
 -----
 
-**Author:** Ayush Paunikar
-**GitHub:** [ayushpaunikar2003](https://www.google.com/search?q=https://github.com/ayushpaunikar2003)
+**Author:** Ayush Paunikar <br>
+**GitHub:** [Electromart-Devops](https://www.google.com/search?q=https://github.com/ayushpaunikar2003)

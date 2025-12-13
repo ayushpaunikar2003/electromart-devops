@@ -25,7 +25,7 @@ repos:
   # ---------------------------------------------------------------
   # 3. Security Scan (Trivy)
   # ---------------------------------------------------------------
-  # Only fails on CRITICAL issues so it doesn't block your work.
+  # Only fails on CRITICAL issues so it doesn't block the work.
   - repo: local
     hooks:
       - id: trivy
