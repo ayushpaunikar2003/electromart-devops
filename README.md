@@ -25,7 +25,7 @@ graph TD
     User -->|API:5000| Web
     Admin((DevOps)) -->|SSH:22| Bastion[Bastion Host]
 
-    subgraph AWS_Cloud [AWS VPC (ap-south-1)]
+    subgraph AWS_Cloud ["AWS VPC (ap-south-1)"]
         subgraph Public_Zone [Public Subnet]
             Web
             Bastion
