@@ -1,11 +1,29 @@
 # ⚡ Electromart – End-to-End DevOps Automation on AWS
 
-![Build Status](https://img.shields.io/github/actions/workflow/status/ayushpaunikar2003/electromart-devops/ci-cd.yml?label=Build%20%26%20Deploy&style=for-the-badge)
-![Terraform](https://img.shields.io/badge/Terraform-IaC-purple?style=for-the-badge&logo=terraform)
-![Ansible](https://img.shields.io/badge/Ansible-Config%20Mgmt-red?style=for-the-badge&logo=ansible)
-![AWS](https://img.shields.io/badge/AWS-Free%20Tier-orange?style=for-the-badge&logo=amazon-aws)
-![Docker](https://img.shields.io/badge/Architecture-Microservices-blue?style=for-the-badge&logo=docker)
+<div align="center">
+
+# ⚡ Electromart – End-to-End DevOps Automation on AWS
+
+![Build Status](https://img.shields.io/github/actions/workflow/status/ayushpaunikar2003/electromart-devops/ci-cd.yml?label=Pipeline&style=for-the-badge&logo=githubactions)
+![Security Scan](https://img.shields.io/badge/Security-Passing-success?style=for-the-badge&logo=security)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
+
+![AWS](https://img.shields.io/badge/AWS-Free%20Tier-232F3E?style=for-the-badge&logo=amazon-aws&logoColor=white)
+![Terraform](https://img.shields.io/badge/Terraform-IaC-7B42BC?style=for-the-badge&logo=terraform&logoColor=white)
+![Ansible](https://img.shields.io/badge/Ansible-Config%20Mgmt-EE0000?style=for-the-badge&logo=ansible&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Microservices-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+
+![React](https://img.shields.io/badge/React-Frontend-61DAFB?style=for-the-badge&logo=react&logoColor=black)
+![NodeJS](https://img.shields.io/badge/Node.js-Backend-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-Database-47A248?style=for-the-badge&logo=mongodb&logoColor=white)
+
+![Repo Size](https://img.shields.io/github/repo-size/ayushpaunikar2003/electromart-devops?style=flat-square&label=Repo%20Size&color=orange)
+![Last Commit](https://img.shields.io/github/last-commit/ayushpaunikar2003/electromart-devops?style=flat-square&label=Last%20Commit&color=blue)
+![Issues](https://img.shields.io/github/issues/ayushpaunikar2003/electromart-devops?style=flat-square&label=Open%20Issues&color=red)
+
+</div>
+
+---
 
 ## 📖 Project Overview
 
