@@ -195,6 +195,3 @@ For security, the monitoring stack is not exposed to the public internet. Use an
 
 **Author:** Ayush Paunikar
 **GitHub:** [ayushpaunikar2003](https://www.google.com/search?q=https://github.com/ayushpaunikar2003)
-
-```
-```
