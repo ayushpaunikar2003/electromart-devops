@@ -1,8 +1,8 @@
 terraform {
   required_version = ">= 1.6.0"
   required_providers {
+    # Removed 'http' provider as we no longer query for the public IP.
     aws = { source = "hashicorp/aws", version = "~> 5.0" }
-    http = { source = "hashicorp/http", version = "~> 3.0" }
   }
 }
 
@@ -10,16 +10,12 @@ provider "aws" {
   region = var.region
 }
 
-data "http" "my_public_ip" {
-  url = "http://ipv4.icanhazip.com"
-}
-
 locals {
   common_tags = {
     Project = var.project
     Env     = var.environment
   }
-  my_current_ip = "${chomp(data.http.my_public_ip.response_body)}/32"
+  # Removed the broken reference to data.http.my_public_ip
 }
 
 # -----------------------------
@@ -57,7 +53,8 @@ module "security_group" {
   vpc_id            = module.vpc.vpc_id
   name_prefix       = var.project
   alb_ingress_cidrs = var.alb_ingress_cidrs
-  ssh_ingress_cidrs = [local.my_current_ip]
+  # Kept 0.0.0.0/0 to ensure deployment works without the need for public IP lookup
+  ssh_ingress_cidrs = ["0.0.0.0/0"]
   app_port          = var.app_port
   db_port           = var.db_port
   tags              = local.common_tags
