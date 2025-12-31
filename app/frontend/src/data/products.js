@@ -36,7 +36,7 @@ export const products = [
     id: 'prod_4',
     name: 'Galaxy Nova S23',
     category: 'Smartphones',
-    price: 1199.99,
+    price: 1299.99,
     imageUrl: 'https://placehold.co/600x400/4A5568/FFFFFF?text=Smartphone',
     rating: 4.9,
     stock: 25,
