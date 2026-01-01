@@ -2,7 +2,7 @@ export const products = [
   // Laptops
   {
     id: 'prod_1',
-    name: 'ZenBook Pro Duo',
+    name: 'Lenovo Idepad Gaming',
     category: 'Laptops',
     price: 1999.99,
     imageUrl: 'https://placehold.co/600x400/2D3748/FFFFFF?text=Laptop',
@@ -12,7 +12,7 @@ export const products = [
   },
   {
     id: 'prod_2',
-    name: 'Spectre x360',
+    name: 'Apple Macbook Air M3',
     category: 'Laptops',
     price: 1549.00,
     imageUrl: 'https://placehold.co/600x400/2D3748/FFFFFF?text=Laptop',
